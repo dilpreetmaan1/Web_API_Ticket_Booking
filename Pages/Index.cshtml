@@ -1,0 +1,244 @@
+﻿@page
+@model Ticket_BookingAPI.Pages.IndexModel
+@{
+}
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Booking</title>
+    <link href="~/css/StyleSheet.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+
+
+    <div class="containers">
+        <div>
+            <h3>Society Tour BOOKING</h3>
+            <div class='withForm'>
+                <div class='d-flex'>
+                    <div>
+                        <label>Name</label>
+
+                        <input type="text" id='name' class='form-control' autocomplete="off">
+                    </div>
+                    <div>
+                        <label>Phone</label>
+                        <input type="text" id='phone' class='form-control'>
+                    </div>
+                    <div>
+                        <label>Status</label>
+                        <select class="form-control" id='status'>
+                            <option value='Paid'>Paid</option>
+                            <option value='Due'>Due</option>
+                        </select>
+                    </div>
+                    <div class='buttn'>
+                        <button type="button" class="btn btn-warning" onclick="tbooking()"> Book </button>
+                    </div>
+                </div>
+            </div>
+            <div class='tableHolder'>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    <tbody id="allbookings">
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="updatebooking">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Booking</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+
+                            <input type="hidden" class="form-control" id="_id" aria-describedby="IdHelp">
+
+                        </div>
+                        <div class="form-group">
+                            <label class="text-dark" for="name">Name</label>
+                            <input type="text" class="form-control" id="update_name" aria-describedby="nameHelp">
+
+                        </div>
+                        <div class="form-group">
+                            <label class="text-dark" for="status">Phone</label>
+                            <input type="text" class="form-control" id="update_phone" aria-describedby="statusHelp">
+
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="text-dark" for="phone">Status </label>
+                            <select class="form-control" id="update_status">
+                                <option value='Paid'>Paid</option>
+                                <option value='Due'>Due</option>
+                            </select>
+                            
+                        </div>
+
+
+                        <div class="form-group" id="update_result">
+
+
+                        </div>
+                        <button type="button" class="btn btn-dark" onclick="updatebooking()">Update </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script>
+        var uri = 'api/Bookings';
+        //Java script
+        $(document).ready(function () {
+            $.getJSON(uri)
+                .done(function (data) {
+                    $("#bookingtemplate").tmpl(data).appendTo("#allbookings");
+                });
+        });
+        // function to get all bookings
+        function getallbookings() {
+            $.getJSON(uri)
+                .done(function (data) {
+                    $("#allbookings").text("");
+                    $("#bookingtemplate").tmpl(data).appendTo("#allbookings");
+                });
+        }
+        // function to add new booking
+        function tbooking() {
+            var _name = $('#name').val();
+            var _status = $('#status').val();
+            var _phone = $('#phone').val();
+
+            var booking = {
+                name: _name,
+                status: _status,
+                phone: _phone
+
+            };
+            $.ajax({
+                type: "POST",
+                url: uri,
+                data: JSON.stringify(booking),
+                contentType: "application/json; charset=utf-8"
+            }).done(function (response) {
+                $("#result").html("Success");
+                getallbookings();
+            }).fail(function (jqXHR, textStatus) {
+                $("#result").html("An error  ");
+            });
+        }
+        // funtion to fill the data
+        function getbookingForUpdate(id) {
+            $.ajax({
+                type: "GET",
+                url: uri + "/" + id,
+                contentType: "application/json"
+            }).done(function (response) {
+                $('#_id').val(response.booking_ID);
+                $('#update_name').val(response.name);
+                $('#update_status').val(response.status);
+                $('#update_phone').val(response.phone);
+
+            });
+        }
+        // function to update booking
+        function updatebooking() {
+            var _name = $('#update_name').val();
+            var _status = $('#update_status').val();
+            var _phone = $('#update_phone').val();
+
+            var bookingUpdate = {
+                booking_ID: parseInt($('#_id').val()),
+                name: _name,
+                status: _status,
+                phone: _phone
+
+            };
+            $.ajax({
+                type: "PUT",
+                url: uri + "/" + $('#_id').val(),
+                data: JSON.stringify(bookingUpdate),
+                contentType: "application/json; charset=utf-8"
+            }).done(function (response) {
+                $("#update_result").html("Success");
+                getallbookings();
+            }).fail(function (jqXHR, textStatus) {
+                $("#update_result").html("An error ");
+            });
+        }
+        //funtion to delete
+        function remove(id) {
+            var yes = confirm("Are you sure you want to delete");
+            if (yes) {
+                $.ajax({
+                    type: "DELETE",
+                    url: uri + "/" + id,
+                }).done(function (response) {
+                    getallbookings();
+                });
+            }
+        }
+    </script>
+
+    <script id="bookingtemplate" type="text/x-jquery-tmpl">
+
+
+
+
+
+        <tr>
+
+            <th>${name}</th>
+            <th>${phone}</th>
+            <th>${status}</th>
+            <th>
+                <button class="btn btn-outline-warning" onclick="getbookingForUpdate('${booking_ID}')" data-toggle="modal" data-target="#updatebooking">Update</button>
+                <a href="#" class="btn btn-outline-danger" onclick="remove('${booking_ID}')">Delete</a>
+            </th>
+
+        </tr>
+
+
+
+
+
+    </script>
+
+
+    </body>
+</html>
